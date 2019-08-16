@@ -110,20 +110,30 @@ const add_doc_Discovery = async addDocumentParams => {
 const submit_String = async (data, filePath) => {
   var splitList = [];
   data = data.replace(/\s\s+/g, " ");
+  var A = "A";
+  var B = "B";
+  var C = "C";
   console.log("Length: " + data.length);
   for (var i = 0, charsLength = data.length; i < charsLength; i += 50000) {
     splitList.push(data.substring(i, i + 50000));
     console.log("List Length: " + splitList.length);
   }
-  var WDSQuery =
-    "<title>" + path.basename(filePath) + "</title>" + "<p>" + data + "</p>";
-  var add_document_params = {
-    environment_id: "27bd261d-c7ae-4312-9ae9-f9e821fb4675",
-    collection_id: "05d75643-6a7a-43d8-84e3-cc89f8f23b10",
-    file: WDSQuery
-  };
-  var discovery_ret = add_doc_Discovery(add_document_params);
-  return discovery_ret;
+
+  splitList.map(async buffer => {
+    var WDSQuery =
+      "<title>" +
+      path.basename(filePath) +
+      "</title>" +
+      "<p>" +
+      buffer +
+      "</p>";
+    var add_document_params = {
+      environment_id: "27bd261d-c7ae-4312-9ae9-f9e821fb4675",
+      collection_id: "d07160d8-1c22-4633-a2f1-03e73b2c63fd",
+      file: WDSQuery
+    };
+    var discovery_ret = add_doc_Discovery(add_document_params);
+  });
 };
 
 let pdfParser = new PDFParser();
