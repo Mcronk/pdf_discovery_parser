@@ -1,14 +1,24 @@
-const fs = require("graceful-fs");
+// const fs = require("graceful-fs");
+
+const fs = require("fs");
+const officegen = require("officegen");
 const rra = require("recursive-readdir-async");
 var path = require("path");
 var pdfUtil = require("pdf-to-text");
 var PDFParser = require("pdf2json");
 var mammoth = require("mammoth");
+//const fs = require("fs");
+
 const DiscoveryV1 = require("ibm-watson/discovery/v1");
+//change the iam_apikey
+//change the environment and collection IDs
+//Don't have any docs open.
+//send in the link
+//note that it ONLY runs on .pdf and .docx
 
 const discovery = new DiscoveryV1({
-  version: "2019-04-30",
-  iam_apikey: "qt5H7hz5ahDZcuioxLc8BCl3d1A-owmviZDVFlyaDwdD",
+  version: "2019-04-02",
+  iam_apikey: "x_J2lbfezvYY6HM8XmFj7JhRKpOpfhdz6jqgtWQZEH2s",
   url: "https://gateway.watsonplatform.net/discovery/api"
 });
 // process.argv[.forEach(function(val, index, array) {
@@ -110,29 +120,60 @@ const add_doc_Discovery = async addDocumentParams => {
 const submit_String = async (data, filePath) => {
   var splitList = [];
   data = data.replace(/\s\s+/g, " ");
-  var A = "A";
-  var B = "B";
-  var C = "C";
+  // var A = "A";
+  // var B = "B";
+  // var C = "C";
   console.log("Length: " + data.length);
-  for (var i = 0, charsLength = data.length; i < charsLength; i += 50000) {
-    splitList.push(data.substring(i, i + 50000));
-    console.log("List Length: " + splitList.length);
+  for (var i = 0, charsLength = data.length; i < charsLength; i += 10000) {
+    splitList.push(data.substring(i, i + 40000));
   }
-
+  var x = 0;
+  var name_file = path.basename(filePath);
+  console.log("List Length: " + splitList.length);
   splitList.map(async buffer => {
-    var WDSQuery =
-      "<title>" +
-      path.basename(filePath) +
-      "</title>" +
-      "<p>" +
-      buffer +
-      "</p>";
-    var add_document_params = {
-      environment_id: "27bd261d-c7ae-4312-9ae9-f9e821fb4675",
-      collection_id: "d07160d8-1c22-4633-a2f1-03e73b2c63fd",
-      file: WDSQuery
-    };
-    var discovery_ret = add_doc_Discovery(add_document_params);
+    x = x + 1;
+
+    //Convert to unicode/UTF8 encoded.
+    name_title =
+      "/Users/michaelcronk/Desktop/econ_docs/created_files/" +
+      x +
+      "_" +
+      name_file;
+    console.log(name_title);
+    var pos = name_title.lastIndexOf(".");
+    name_title =
+      name_title.substr(0, pos < 0 ? name_title.length : pos) + ".docx";
+    var lyrics = buffer;
+
+    // Create an empty Word object:
+    let docx = officegen("docx");
+
+    // Officegen calling this function after finishing to generate the docx document:
+    docx.on("finalize", function(written) {
+      console.log("Finish to create a Microsoft Word document.");
+    });
+
+    let pObj = docx.createP();
+
+    pObj.addText(lyrics);
+    let out = fs.createWriteStream(name_title);
+    docx.generate(out);
+    // write to a new file named 2pac.txt
+    // fs.writeFile(name_title, lyrics, err => {
+    //   // throws an error, you could also catch it here
+    //   if (err) throw err;
+    //
+    //   // success case, the file was saved
+    //   console.log("Lyric saved!");
+    // });
+
+    //var WDSQuery = "<title>" + name_title + "</title><p>" + buffer + "</p>";
+    // var add_document_params = {
+    //   environment_id: "a1adf1c9-6197-4d18-97b5-4d8b5e478076",
+    //   collection_id: "2701a51e-51de-42f5-85c7-b9001758cf2b",
+    //   file: WDSQuery
+    // };
+    //  var discovery_ret = add_doc_Discovery(add_document_params);
   });
 };
 
@@ -164,7 +205,7 @@ const breakdown_PDFs = async pdfList => {
   await Promise.all(
     pdfList.map(async pdfPath => {
       pdfUtil.pdfToText(pdfPath, function(err, data) {
-        if (err) throw err;
+        if (err) console.log(pdfPath);
 
         submit_String(data, pdfPath);
 

@@ -21,6 +21,7 @@
     "graceful-fs": "^4.2.2",
     "ibm-watson": "^4.3.4",
     "mammoth": "^1.4.8",
+    "officegen": "^0.6.3",
     "path": "^0.12.7",
     "pdf-to-text": "0.0.7",
     "pdf2json": "^1.1.8",
